@@ -111,11 +111,12 @@ function morgan (format, options) {
     res._startTime = undefined
     res._chunkSize = 0
 
-    const write = res.write
-    res.write = function (body) {
-      console.log('Response body before sending: ', body)
-      res._chunkSize += Buffer.byteLength(body)
-      write.call(this, body)
+    if (typeof res._originalWrite === 'undefined') {
+      res._originalWrite = res.write
+      res.write = function (chunk) {
+        res._chunkSize += Buffer.byteLength(chunk)
+        res._originalWrite(chunk)
+      }
     }
 
     // record request start
