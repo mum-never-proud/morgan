@@ -111,11 +111,12 @@ function morgan (format, options) {
     res._startTime = undefined
     res._chunkSize = 0
 
-    const write = res.write
-    res.write = function (body) {
-      console.log('Response body before sending: ', body)
-      res._chunkSize += Buffer.byteLength(body)
-      write.call(this, body)
+    if (typeof res._originalWrite === 'undefined') {
+      res._originalWrite = res.write
+      res.write = function (chunk) {
+        res._chunkSize += Buffer.byteLength(chunk)
+        res._originalWrite(chunk)
+      }
     }
 
     // record request start
@@ -343,7 +344,7 @@ morgan.token('user-agent', function getUserAgentToken (req) {
  */
 
 morgan.token('chunked', function getTransferEncoding (_, res) {
-  return res._contentLength ? undefined : 'chunked'
+  return res.getHeader('content-length') ? undefined : 'chunked'
 })
 
 /**
@@ -351,7 +352,7 @@ morgan.token('chunked', function getTransferEncoding (_, res) {
  */
 
 morgan.token('content-length', function getTransferEncoding (_, res) {
-  return res._chunkSize ? res._chunkSize : res._contentLength
+  return res._chunkSize ? res._chunkSize : res.getHeader('content-length')
 })
 
 /**
