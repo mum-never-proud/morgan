@@ -344,7 +344,7 @@ morgan.token('user-agent', function getUserAgentToken (req) {
  */
 
 morgan.token('chunked', function getTransferEncoding (_, res) {
-  return res._contentLength ? undefined : 'chunked'
+  return res.getHeader('content-length') ? undefined : 'chunked'
 })
 
 /**
@@ -352,7 +352,7 @@ morgan.token('chunked', function getTransferEncoding (_, res) {
  */
 
 morgan.token('content-length', function getTransferEncoding (_, res) {
-  return res._chunkSize ? res._chunkSize : res._contentLength
+  return res._chunkSize ? res._chunkSize : res.getHeader('content-length')
 })
 
 /**
